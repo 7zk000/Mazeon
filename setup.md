@@ -68,43 +68,51 @@ npm run ios
 npm run dev
 ```
 
-## プロジェクト構造
-
+## プロジェクト構造（最新）
 ```
-mazeon/
-├── src/                    # ReactNativeアプリのソースコード
-│   ├── screens/           # 画面コンポーネント
+Mazeon/
+├── src/
+│   ├── App.js
+│   ├── screens/
 │   │   ├── HomeScreen.js
 │   │   ├── LobbyScreen.js
 │   │   └── GameScreen.js
-│   └── context/           # React Context
-│       └── GameContext.js
-├── backend/               # Node.jsバックエンド
-│   ├── server.js         # メインサーバーファイル
-│   ├── package.json      # バックエンド依存関係
-│   └── env.example       # 環境変数サンプル
-├── package.json          # フロントエンド依存関係
-├── metro.config.js       # Metro bundler設定
-├── babel.config.js       # Babel設定
-├── index.js              # ReactNativeエントリーポイント
-└── app.json              # アプリ設定
+│   ├── context/
+│   │   └── GameContext.js
+│   ├── config/
+│   │   └── GameConfig.js
+│   ├── constants/
+│   │   └── GameConstants.js
+│   ├── utils/
+│   │   └── GameUtils.js
+│   ├── services/
+│   │   ├── AudioService.js
+│   │   └── StorageService.js
+│   ├── hooks/
+│   │   └── GameHooks.js
+│   ├── components/
+│   │   └── GameComponents.js
+│   └── assets/
+│       ├── images/
+│       │   └── README.md
+│       └── sounds/
+│           └── README.md
+├── backend/
+│   ├── package.json
+│   ├── server.js
+│   ├── env.example
+│   └── DevDocuments/
+│       ├── README.md
+│       ├── 概要.md
+│       ├── 注意点.md
+│       └── AI_UPDATE_RULES.md
+├── package.json
+├── metro.config.js
+├── babel.config.js
+├── index.js
+├── app.json
+└── .gitignore
 ```
-
-## ゲーム機能
-
-### 基本ルール
-- プレイ人数: 1人〜8人
-- 迷路は自動生成
-- 階層: 1〜3階層まで
-- アイテム: 脱出用鍵や攻略の手助け
-- 制限時間: 15分
-
-### ゲームフロー
-1. ホーム画面でルーム作成または参加
-2. ロビーでプレイヤー待機
-3. ホストがゲーム開始
-4. 迷路内で鍵を探して出口を目指す
-5. 制限時間内に出口に到達してクリア
 
 ## トラブルシューティング
 
@@ -127,19 +135,10 @@ rm -rf node_modules
 npm install
 ```
 
-## 開発者向け情報
-
-### 技術スタック
-- **フロントエンド**: React Native 0.72.6
-- **バックエンド**: Node.js + Express + Socket.IO
-- **状態管理**: React Context API
-- **ナビゲーション**: React Navigation
-
-### 追加機能の実装
-- 音響効果の追加
-- アニメーションの改善
-- マルチプレイヤー同期の強化
-- データベース連携（MongoDB等）
+## 参考ドキュメント（開発者向け）
+- 最優先: `backend/DevDocuments/注意点.md`
+- 更新ルール: `backend/DevDocuments/AI_UPDATE_RULES.md`
+- 概要/構成: `backend/DevDocuments/概要.md`
 
 ## ライセンス
 MIT License

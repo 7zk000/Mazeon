@@ -35,16 +35,58 @@ npm run android  # Android
 npm run ios      # iOS
 ```
 
-## プロジェクト構造
+## プロジェクト構造（最新）
 ```
-mazeon/
-├── src/                    # ReactNativeアプリのソースコード
-│   ├── screens/           # 画面コンポーネント
-│   └── context/           # React Context
-├── backend/               # Node.jsバックエンド
-├── package.json          # フロントエンド依存関係
-└── setup.md              # セットアップガイド
+Mazeon/
+├── src/                         # React Native アプリ
+│   ├── App.js                   # ルート（Navigation/Providers）
+│   ├── screens/                 # 画面
+│   │   ├── HomeScreen.js
+│   │   ├── LobbyScreen.js
+│   │   └── GameScreen.js
+│   ├── context/                 # グローバル状態/Socket管理
+│   │   └── GameContext.js
+│   ├── config/                  # ゲーム/UI/音/通信/デバッグ設定
+│   │   └── GameConfig.js
+│   ├── constants/               # 共有定数（状態/イベント等）
+│   │   └── GameConstants.js
+│   ├── utils/                   # ユーティリティ（スケール/時間/ログ等）
+│   │   └── GameUtils.js
+│   ├── services/                # サービス（外部I/O）
+│   │   ├── AudioService.js
+│   │   └── StorageService.js
+│   ├── hooks/                   # カスタムフック（ゲームループ等）
+│   │   └── GameHooks.js
+│   ├── components/              # 共通UI
+│   │   └── GameComponents.js
+│   └── assets/                  # アセット
+│       ├── images/
+│       │   └── README.md
+│       └── sounds/
+│           └── README.md
+├── backend/                     # Node.js バックエンド
+│   ├── package.json
+│   ├── server.js                # Express + Socket.IO
+│   ├── env.example
+│   └── DevDocuments/            # 開発ドキュメント
+│       ├── README.md            # 索引/参照順序
+│       ├── 概要.md
+│       ├── 注意点.md            # 絶対遵守ベストプラクティス
+│       └── AI_UPDATE_RULES.md   # AI更新ルール/参照ポリシー
+├── package.json                 # RN依存とスクリプト
+├── metro.config.js
+├── babel.config.js
+├── index.js
+├── app.json
+├── .gitignore
+├── README.md
+└── setup.md
 ```
+
+## 開発者向けドキュメント
+- 最優先: `backend/DevDocuments/注意点.md`
+- 更新ルール: `backend/DevDocuments/AI_UPDATE_RULES.md`
+- 概要/構成: `backend/DevDocuments/概要.md`
 
 ## ライセンス
 MIT License
