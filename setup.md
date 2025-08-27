@@ -140,5 +140,10 @@ npm install
 - 更新ルール: `backend/DevDocuments/AI_UPDATE_RULES.md`
 - 概要/構成: `backend/DevDocuments/概要.md`
 
+## 補足: Skia（高速描画）を使う場合
+1) 依存追加: `npm i @shopify/react-native-skia`
+2) iOS: `cd ios && pod install`
+3) コード: `GameScreen` は `SkiaMazeView` を自動利用（Skia未導入時はフォールバック）
+
 ## ライセンス
 MIT License

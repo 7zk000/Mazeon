@@ -64,6 +64,9 @@ Mazeon/
 │       │   └── README.md
 │       └── sounds/
 │           └── README.md
+│
+│   ※ 高速描画: Skia描画コンポーネント（任意）
+│   - `components/SkiaMazeView.js`（@shopify/react-native-skia がある場合に使用。無い場合はフォールバック）
 ├── backend/                     # Node.js バックエンド
 │   ├── package.json
 │   ├── server.js                # Express + Socket.IO
@@ -87,6 +90,9 @@ Mazeon/
 - 最優先: `backend/DevDocuments/注意点.md`
 - 更新ルール: `backend/DevDocuments/AI_UPDATE_RULES.md`
 - 概要/構成: `backend/DevDocuments/概要.md`
+
+## 変更履歴（抜粋）
+- 2025-08-27: 仕様更新（200×200、最大3階層、鍵3本）、バックエンド鍵/出口イベント、フロント同期、ビューポート/Skia描画追加
 
 ## ライセンス
 MIT License

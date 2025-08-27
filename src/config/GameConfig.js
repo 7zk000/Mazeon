@@ -14,6 +14,29 @@ export const GameConfig = {
     minLevels: 1,
   },
 
+  // 新ルール: マップ/難易度/鍵
+  rules: {
+    map: {
+      width: 200,
+      height: 200,
+      randomSeed: null, // 乱数シード（nullでランダム）
+    },
+    levelsByDifficulty: {
+      easy: 1,
+      normal: 2,
+      hard: 3,
+    },
+    keysRequiredToExit: 3,
+    items: {
+      helpItemsEnabled: true,
+      spawn: {
+        minPerLevel: 3,
+        maxPerLevel: 8,
+      },
+      types: ['light', 'speed', 'shield'],
+    },
+  },
+
   // プレイヤー設定
   player: {
     defaultSpeed: 1,
@@ -192,6 +215,9 @@ export const ItemTypes = {
   EXIT: 'exit',
   POWER_UP: 'powerUp',
   TRAP: 'trap',
+  LIGHT: 'light',
+  SPEED: 'speed',
+  SHIELD: 'shield',
 };
 
 // イベントタイプの定数
@@ -203,27 +229,29 @@ export const EventTypes = {
   GAME_LOSE: 'gameLose',
   PLAYER_JOIN: 'playerJoin',
   PLAYER_LEAVE: 'playerLeave',
+  KEYS_UPDATED: 'keysUpdated',
+  EXIT_OPENED: 'exitOpened',
 };
 
 // 難易度設定
 export const DifficultyLevels = {
   EASY: {
     name: 'easy',
-    mazeSize: { width: 8, height: 8 },
+    mazeSize: { width: 200, height: 200 },
     levels: 1,
     timeLimit: 20 * 60 * 1000,
-    itemCount: { keys: 1, powerUps: 2, traps: 1 },
+    itemCount: { keys: 3, powerUps: 2, traps: 1 },
   },
   NORMAL: {
     name: 'normal',
-    mazeSize: { width: 12, height: 12 },
+    mazeSize: { width: 200, height: 200 },
     levels: 2,
     timeLimit: 15 * 60 * 1000,
-    itemCount: { keys: 2, powerUps: 3, traps: 2 },
+    itemCount: { keys: 3, powerUps: 3, traps: 2 },
   },
   HARD: {
     name: 'hard',
-    mazeSize: { width: 16, height: 16 },
+    mazeSize: { width: 200, height: 200 },
     levels: 3,
     timeLimit: 10 * 60 * 1000,
     itemCount: { keys: 3, powerUps: 4, traps: 4 },
@@ -241,7 +269,6 @@ export const Localization = {
       joinGame: 'ゲーム参加',
       settings: '設定',
       exit: '終了',
-      // 他の翻訳キー
     },
     en: {
       gameTitle: 'Mazeon',
@@ -249,7 +276,6 @@ export const Localization = {
       joinGame: 'Join Game',
       settings: 'Settings',
       exit: 'Exit',
-      // 他の翻訳キー
     },
   },
 };

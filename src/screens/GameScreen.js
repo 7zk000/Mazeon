@@ -1,20 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-  Alert,
-  SafeAreaView,
-} from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, SafeAreaView } from 'react-native';
+import SkiaMazeView from '../components/SkiaMazeView';
 import { useGame } from '../context/GameContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const GameScreen = ({ navigation }) => {
-  const { maze, playerPosition, hasKey, movePlayer, gameState, room } = useGame();
+  const { maze, playerPosition, hasKey, movePlayer, gameState, room, keysCollected, keysRequired, exitOpen } = useGame();
   const [timeLeft, setTimeLeft] = useState(15 * 60 * 1000); // 15分
+  const VIEWPORT = 21; // 表示範囲（奇数）
 
   useEffect(() => {
     if (!maze || gameState !== 'playing') {
@@ -51,9 +45,17 @@ const GameScreen = ({ navigation }) => {
     movePlayer(direction);
   };
 
+  const cellSize = useMemo(() => {
+    // 表示範囲に基づいてセルサイズを決定（端末に合わせて自動調整）
+    const paddingCols = 2; // 余白
+    const paddingRows = 4; // タイトル/ヘッダ分
+    const maxCols = Math.min(VIEWPORT, maze ? maze[0][0].length : VIEWPORT);
+    const maxRows = Math.min(VIEWPORT, maze ? maze[0].length : VIEWPORT);
+    return Math.min(screenWidth / (maxCols + paddingCols), screenHeight / (maxRows + paddingRows));
+  }, [maze]);
+
   const renderMazeCell = (cell, x, y, level) => {
     const isPlayerHere = playerPosition.x === x && playerPosition.y === y && playerPosition.level === level;
-    const cellSize = Math.min(screenWidth / (maze[level][0].length + 2), screenHeight / (maze[level].length + 4));
 
     return (
       <View
@@ -90,16 +92,33 @@ const GameScreen = ({ navigation }) => {
     );
   };
 
-  const renderMazeLevel = (levelMaze, level) => {
+  const renderCurrentLevelViewport = () => {
+    const level = playerPosition.level || 0;
+    const levelMaze = maze[level];
+    const half = Math.floor(VIEWPORT / 2);
+    const startY = Math.max(0, playerPosition.y - half);
+    const endY = Math.min(levelMaze.length - 1, playerPosition.y + half);
+    const startX = Math.max(0, playerPosition.x - half);
+    const endX = Math.min(levelMaze[0].length - 1, playerPosition.x + half);
+
+    const rows = [];
+    for (let y = startY; y <= endY; y++) {
+      const cells = [];
+      for (let x = startX; x <= endX; x++) {
+        cells.push(renderMazeCell(levelMaze[y][x], x, y, level));
+      }
+      rows.push(
+        <View key={y} style={styles.mazeRow}>
+          {cells}
+        </View>
+      );
+    }
+
     return (
       <View key={level} style={styles.mazeLevel}>
-        <Text style={styles.levelTitle}>階層 {level + 1}</Text>
+        <Text style={styles.levelTitle}>階層 {level + 1}（{startX},{startY}〜{endX},{endY}）</Text>
         <View style={styles.mazeContainer}>
-          {levelMaze.map((row, y) => (
-            <View key={y} style={styles.mazeRow}>
-              {row.map((cell, x) => renderMazeCell(cell, x, y, level))}
-            </View>
-          ))}
+          {rows}
         </View>
       </View>
     );
@@ -121,7 +140,7 @@ const GameScreen = ({ navigation }) => {
         <View style={styles.infoRow}>
           <Text style={styles.timeText}>残り時間: {formatTime(timeLeft)}</Text>
           <View style={styles.keyStatus}>
-            <Text style={styles.keyText}>鍵: {hasKey ? '✅' : '❌'}</Text>
+            <Text style={styles.keyText}>鍵: {keysCollected}/{keysRequired}（出口: {exitOpen ? '開放' : '閉鎖'}）</Text>
           </View>
         </View>
         <Text style={styles.positionText}>
@@ -130,7 +149,9 @@ const GameScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.mazeContainer}>
-        {maze.map((levelMaze, level) => renderMazeLevel(levelMaze, level))}
+        {/* Skiaが利用可能ならSkia描画、無ければ既存ビュー描画 */}
+        <SkiaMazeView maze={maze} playerPosition={playerPosition} exitOpen={exitOpen} viewport={41} />
+        {!SkiaMazeView && renderCurrentLevelViewport()}
       </View>
 
       <View style={styles.controlsContainer}>

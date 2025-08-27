@@ -13,6 +13,10 @@ const initialState = {
   maze: null,
   playerPosition: { x: 0, y: 0, level: 0 },
   hasKey: false,
+  keysCollected: 0,
+  keysRequired: 3,
+  exitOpen: false,
+  exit: null,
   gameTime: 0,
   error: null
 };
@@ -66,6 +70,20 @@ const gameReducer = (state, action) => {
       return {
         ...state,
         hasKey: action.payload
+      };
+    
+    case 'SET_KEYS_INFO':
+      return {
+        ...state,
+        keysCollected: action.payload.keysCollected,
+        keysRequired: action.payload.keysRequired
+      };
+    
+    case 'SET_EXIT_INFO':
+      return {
+        ...state,
+        exitOpen: action.payload.exitOpen,
+        exit: action.payload.exit || state.exit
       };
     
     case 'UPDATE_PLAYERS':
@@ -129,6 +147,8 @@ export const GameProvider = ({ children }) => {
       dispatch({ type: 'SET_GAME_STATE', payload: 'playing' });
       dispatch({ type: 'SET_PLAYER_POSITION', payload: { x: 0, y: 0, level: 0 } });
       dispatch({ type: 'SET_HAS_KEY', payload: false });
+      dispatch({ type: 'SET_KEYS_INFO', payload: { keysCollected: data.keysCollected || 0, keysRequired: data.keysRequired || 3 } });
+      dispatch({ type: 'SET_EXIT_INFO', payload: { exitOpen: !!data.exitOpen, exit: data.exit || null } });
     });
     
     socket.on('playerMoved', (data) => {
@@ -138,10 +158,12 @@ export const GameProvider = ({ children }) => {
       }
     });
     
-    socket.on('keyCollected', (data) => {
-      if (data.playerId === socket.id) {
-        dispatch({ type: 'SET_HAS_KEY', payload: true });
-      }
+    socket.on('keysUpdated', (data) => {
+      dispatch({ type: 'SET_KEYS_INFO', payload: { keysCollected: data.keysCollected, keysRequired: data.keysRequired } });
+    });
+
+    socket.on('exitOpened', (data) => {
+      dispatch({ type: 'SET_EXIT_INFO', payload: { exitOpen: true, exit: data.exit } });
     });
     
     socket.on('gameWon', (data) => {

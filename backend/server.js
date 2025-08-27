@@ -94,19 +94,38 @@ function generateMaze(width, height, levels = 1) {
           break;
       }
     }
-    
-    // アイテムと出口を配置
-    const exitX = Math.floor(Math.random() * width);
-    const exitY = Math.floor(Math.random() * height);
-    maze[level][exitY][exitX].hasExit = true;
-    
-    // 鍵を配置
-    const keyX = Math.floor(Math.random() * width);
-    const keyY = Math.floor(Math.random() * height);
-    maze[level][keyY][keyX].hasKey = true;
   }
   
   return maze;
+}
+
+// 3本の鍵と出口を配置（出口は最終階層）
+function placeKeysAndExit(maze) {
+  const levels = maze.length;
+  const height = maze[0].length;
+  const width = maze[0][0].length;
+
+  // 出口は最終階層のランダムセル
+  const exitLevel = levels - 1;
+  const exitX = Math.floor(Math.random() * width);
+  const exitY = Math.floor(Math.random() * height);
+  maze[exitLevel][exitY][exitX].hasExit = true;
+
+  // 鍵は重複のない3セルに配置（階層は問わない）
+  const used = new Set([`${exitLevel}:${exitX}:${exitY}`]);
+  let keysToPlace = 3;
+  while (keysToPlace > 0) {
+    const l = Math.floor(Math.random() * levels);
+    const y = Math.floor(Math.random() * height);
+    const x = Math.floor(Math.random() * width);
+    const key = `${l}:${x}:${y}`;
+    if (used.has(key)) continue;
+    maze[l][y][x].hasKey = true;
+    used.add(key);
+    keysToPlace--;
+  }
+
+  return { exit: { level: exitLevel, x: exitX, y: exitY } };
 }
 
 // Socket.IO接続処理
@@ -126,9 +145,14 @@ io.on('connection', (socket) => {
   // ルーム作成
   socket.on('createRoom', (data) => {
     const roomId = `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const { playerCount = 4, mazeWidth = 10, mazeHeight = 10, levels = 1 } = data;
+    const { playerCount = 4 } = data;
+    // 仕様に合わせて固定（200x200 / 最大3階層）。将来は難易度で切替
+    const width = 200;
+    const height = 200;
+    const levels = Math.min(3, Math.max(1, (data?.levels || 1)));
     
-    const maze = generateMaze(mazeWidth, mazeHeight, levels);
+    const maze = generateMaze(width, height, levels);
+    const exitInfo = placeKeysAndExit(maze);
     
     const room = {
       id: roomId,
@@ -138,7 +162,11 @@ io.on('connection', (socket) => {
       gameState: 'waiting', // waiting, playing, finished
       startTime: null,
       timeLimit: 15 * 60 * 1000, // 15分
-      createdBy: socket.id
+      createdBy: socket.id,
+      keysRequired: 3,
+      keysCollected: 0,
+      exitOpen: false,
+      exit: exitInfo.exit
     };
     
     gameRooms.set(roomId, room);
@@ -199,7 +227,11 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('gameStarted', { 
       startTime: room.startTime,
       timeLimit: room.timeLimit,
-      maze: room.maze
+      maze: room.maze,
+      keysRequired: room.keysRequired,
+      keysCollected: room.keysCollected,
+      exitOpen: room.exitOpen,
+      exit: room.exit
     });
     
     console.log(`ルーム ${roomId} でゲームが開始されました`);
@@ -239,26 +271,35 @@ io.on('connection', (socket) => {
       
       // アイテム取得チェック
       const newCell = room.maze[newLevel][newY][newX];
-      if (newCell.hasKey && !player.hasKey) {
-        player.hasKey = true;
+      if (newCell.hasKey) {
         newCell.hasKey = false;
-        io.to(roomId).emit('keyCollected', { playerId: socket.id });
+        room.keysCollected = Math.min(room.keysRequired, room.keysCollected + 1);
+        io.to(player.roomId).emit('keysUpdated', { 
+          playerId: socket.id,
+          keysCollected: room.keysCollected,
+          keysRequired: room.keysRequired
+        });
+        // 鍵が揃ったら出口解放
+        if (!room.exitOpen && room.keysCollected >= room.keysRequired) {
+          room.exitOpen = true;
+          io.to(player.roomId).emit('exitOpened', { exit: room.exit });
+        }
       }
       
-      // 出口チェック
-      if (newCell.hasExit && player.hasKey) {
+      // 出口チェック（解放済みであればクリア）
+      if (newCell.hasExit && room.exitOpen) {
         room.gameState = 'finished';
-        io.to(roomId).emit('gameWon', { 
+        io.to(player.roomId).emit('gameWon', { 
           winnerId: socket.id,
           winnerName: player.name,
           timeElapsed: Date.now() - room.startTime
         });
       }
       
-      io.to(roomId).emit('playerMoved', {
+      io.to(player.roomId).emit('playerMoved', {
         playerId: socket.id,
         position: player.position,
-        hasKey: player.hasKey
+        hasKey: false
       });
     }
   });
